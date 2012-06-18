@@ -28,7 +28,7 @@ module ActsAsXapian
         if config['base_db_path']
           db_parent_path = Rails.root.join(config['base_db_path'])
         else
-          db_parent_path = File.join(RAILS_ROOT, 'db', 'xapiandbs')
+          db_parent_path = File.join(Rails.root, 'db', 'xapiandbs')
         end
 
         # make the directory for the xapian databases to go in
