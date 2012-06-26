@@ -42,8 +42,26 @@ module ActsAsXapian
       self.query_string = query_string
 
       # Construct query which only finds things from specified models
+      if options.has_key? :flags
+        query_flags = options.delete(:flags)
+      else
+        query_flags = @@parse_query_flags
+      end
+      if options.has_key? :additional_flags
+        query_flags |= options.delete(:additional_flags)
+      end
       model_query = Xapian::Query.new(Xapian::Query::OP_OR, model_classes.map {|mc| "M#{mc}" })
-      user_query = @index.query_parser.parse_query(self.query_string, @@parse_query_flags)
+      if options.has_key? :default_op
+        original_default_op = @index.query_parser.default_op
+        begin
+          @index.query_parser.default_op = options.delete(:default_op)
+          user_query = @index.query_parser.parse_query(self.query_string, query_flags)
+        ensure
+          @index.query_parser.default_op = original_default_op
+        end
+      else
+        user_query = @index.query_parser.parse_query(self.query_string, query_flags)
+      end
       self.query = Xapian::Query.new(Xapian::Query::OP_AND, model_query, user_query)
 
       # Call base class constructor
